@@ -10,4 +10,4 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS "-pthread -Wall -Wno-reorder")
 endif (UNIX)
 
-add_executable(UdpSender main.cpp ../utils.h)
+add_executable(UdpSender main.cpp ../Common/Utils.h)

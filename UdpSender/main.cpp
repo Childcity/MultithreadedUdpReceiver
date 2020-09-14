@@ -1,5 +1,5 @@
 #include "../packing.hpp"
-#include "../utils.h"
+#include "../Common/Utils.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	std::cout << "IP addresses for: " << SERVER_ADR << std::endl;
-	PrintIpAdresses(servinfo);
+	std::cout << "IP addresses for: " << SERVER_ADR << "\n"
+			  << Utils::PrintIpAddresses(servinfo) << std::endl;
 
 	// loop through all the results and make a socket
 	for(p = servinfo; p != nullptr; p = p->ai_next) {
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	ssize_t numBytes;
 	auto s = "Hello !";
 	while (true) {
-		if ((numBytes = SendAll(sockfd, s, strlen(s), serverAddr)) == -1) {
+		if ((numBytes = Utils::SendAll(sockfd, s, strlen(s), serverAddr)) == -1) {
 			perror("talker: SendAll");
 			exit(1);
 		}

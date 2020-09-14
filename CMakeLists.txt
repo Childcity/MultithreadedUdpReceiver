@@ -18,4 +18,8 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS "-pthread -Wall -Wno-reorder")
 endif (UNIX)
 
-add_executable(MultithreadedUdpReceiver main.cpp packing.hpp utils.h)
+add_executable(MultithreadedUdpReceiver
+        main.cpp
+        packing.hpp
+        Common/Utils.h
+        Common/ServerError.hpp)
