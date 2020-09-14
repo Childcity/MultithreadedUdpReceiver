@@ -1,5 +1,5 @@
-#include "../packing.hpp"
-#include "../Common/Utils.h"
+#include "../Common/packing.h"
+#include "../Common/Utils.hpp"
 
 #include <cstdio>
 #include <cstdlib>
