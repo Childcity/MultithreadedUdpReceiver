@@ -21,9 +21,23 @@
 
 int main(int argc, char *argv[])
 {
-    Message msg { 11, 22, 33, 44 };
-    Message::Pack(msg);
-    Utils::Dump(buf, messageSize);
+    std::array<unsigned char, sizeof(Message)> buff;
+    Message msg { 1, 22, 12, 44 };
+    Message::Pack(msg, buff.data());
+    DEBUG(msg.MessageSize);
+    Utils::Dump(buff.data(), msg.MessageSize);
+
+    Message msg2;
+    Message::UnPack(buff.data(), msg2);
+   DEBUG("" <<std::dec << msg2.MessageSize << " " << (int) msg2.MessageType << " "
+                          << msg2.MessageId << " " << msg2.MessageData);
+
+   Packet packet;
+   *packet.body() = buff.data();
+   DEBUG(std::string(packet.data(), packet.PacketSize));
+    Utils::Dump((unsigned char *)packet.data(), packet.PacketSize);
+
+
     return 0;
 
     int yes = 1; // For setsockopt() SO_REUSEADDR, below
@@ -89,7 +103,6 @@ int main(int argc, char *argv[])
     char ipStr[INET6_ADDRSTRLEN];
 
     while (true) {
-
         // non blocking recv
 
         if ((numbytes = recvfrom(sockfd, buf, MAXBUFLEN - 1, 0, (struct sockaddr *)&their_addr, &addr_len)) == -1) {
