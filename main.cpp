@@ -1,5 +1,6 @@
 #include "UdpReceiver/UdpReceiver.h"
-#include "Common/Message.h"
+#include "Common/Protocol/Message.h"
+#include "Common/Protocol/Packet.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -21,21 +22,15 @@
 
 int main(int argc, char *argv[])
 {
-    std::array<unsigned char, sizeof(Message)> buff;
-    Message msg { 1, 22, 12, 44 };
-    Message::Pack(msg, buff.data());
-    DEBUG(msg.MessageSize);
-    Utils::Dump(buff.data(), msg.MessageSize);
+    Message msg { 0, 22, 12, 44 }, msg2;
 
-    Message msg2;
-    Message::UnPack(buff.data(), msg2);
-   DEBUG("" <<std::dec << msg2.MessageSize << " " << (int) msg2.MessageType << " "
-                          << msg2.MessageId << " " << msg2.MessageData);
+    Packet packet;
+    packet.dump();
+    packet.setMessage(msg);
+    packet.dump();
 
-   Packet packet;
-   *packet.body() = buff.data();
-   DEBUG(std::string(packet.data(), packet.PacketSize));
-    Utils::Dump((unsigned char *)packet.data(), packet.PacketSize);
+    msg2 = packet.getMessage();
+    msg2.dump();
 
 
     return 0;

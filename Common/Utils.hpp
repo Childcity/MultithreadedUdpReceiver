@@ -23,7 +23,7 @@
 
 class Utils {
 public:
-    // RSII for unix file descriotors
+    // RAII for unix file descriotors
     struct unique_fd final {
     public:
         explicit unique_fd()
@@ -160,14 +160,25 @@ public:
         return &(((struct sockaddr_in6 *)sa)->sin6_addr);
     }
 
-    static void Dump(unsigned char buf[], size_t size)
+    //static void Dump(const char buf[], size_t size)
+    //{
+    //    Dump((const unsigned char *)&buf[0], size);
+    //}
+
+    static void Dump(const unsigned char buf[], size_t size)
     {
+        std::cout << DumpToStr(buf, size) << std::endl;
+    }
+
+    static std::string DumpToStr(const unsigned char buf[], size_t size)
+    {
+        std::stringstream stream;
         for (size_t i = 0; i < size; ++i)
-            std::cout << std::hex
-                      << std::setfill('0')
-                      << std::setw(2)
-                      << (int)buf[i] << " ";
-        std::cout << std::endl;
+            stream << std::hex
+                   << std::setfill('0')
+                   << std::setw(2)
+                   << (int)buf[i] << " ";
+        return stream.str();
     }
 
 private:

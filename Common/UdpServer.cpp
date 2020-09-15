@@ -4,6 +4,13 @@
 
 #include "UdpServer.h"
 
+UdpServer::UdpServer(std::string_view address, short port, size_t receiveBufLength)
+        : address_(address)
+        , port_(port)
+        , receiveBufLen_(receiveBufLength)
+        , receiveBuf_(std::make_unique<char[]>(receiveBufLength))
+{}
+
 void UdpServer::createListener() {
     int rv;
     int yes = 1; // For setsockopt() SO_REUSEADDR, below
@@ -61,13 +68,6 @@ void UdpServer::createListener() {
         }
     }
 }
-
-UdpServer::UdpServer(std::string_view address, short port, size_t receiveBufLength)
-        : address_(address)
-        , port_(port)
-        , receiveBufLen_(receiveBufLength)
-        , receiveBuf_(std::make_unique<char[]>(receiveBufLength))
-{}
 
 UdpServer::ReadStatus UdpServer::readSome() {
     ssize_t numBytes;
