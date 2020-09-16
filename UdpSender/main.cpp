@@ -18,16 +18,17 @@
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
+        const char *appName = ((argv[0][0])
+                                   ? strrchr(&argv[0][0], '/')
+                                   : "appname");
         std::cerr << "usage: ."
-                  << ((argv[0][0])
-                          ? strrchr(&argv[0][0], '/')
-                          : "appname")
-                  << " <hostname> <port>\n"
-                  << "example: ./UdpSender \"::1\" 6333";
+                  << appName << " <udp_receive_hostname> <udp_receive_port>\n"
+                  << "example: ." << appName << " \"::1\" 6333" << std::endl;
+        ;
         exit(1);
     }
 
-    auto port = static_cast<uint64_t >(strtol(argv[2], nullptr, 10));
+    auto port = static_cast<uint64_t>(strtol(argv[2], nullptr, 10));
 
     int sockfd {};
     struct addrinfo hints {

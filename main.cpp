@@ -9,12 +9,12 @@
 int main(int argc, char *argv[])
 {
     if (argc != 4) {
+        const char *appName = ((argv[0][0])
+                                   ? strrchr(&argv[0][0], '/')
+                                   : "appname");
         std::cerr << "usage: ."
-                  << ((argv[0][0])
-                          ? strrchr(&argv[0][0], '/')
-                          : "appname")
-                  << " <udp_receive_hostname> <udp_receive_port1> <udp_receive_port2>\n"
-                  << "example: ./MultithreadedUdpReceiver \"::1\" 6333 6334";
+                  << appName << " <udp_receive_hostname> <udp_receive_port1> <udp_receive_port2>\n"
+                  << "example: ." << appName << " \"::1\" 6333 6334" << std::endl;
         exit(1);
     }
 
