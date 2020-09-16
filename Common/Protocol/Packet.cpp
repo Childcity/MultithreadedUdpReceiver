@@ -58,7 +58,7 @@ void Packet::dump()
 
 void Packet::init()
 {
-    memset((buff_), 0xFF, static_cast<size_t>(PacketSize)); //TODO: delete initialization when finished testing
+    //memset((buff_), 0xFF, static_cast<size_t>(PacketSize)); //TODO: delete initialization when finished testing
     header()->init();
     footer()->init();
 }

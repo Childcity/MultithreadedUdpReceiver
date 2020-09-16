@@ -12,14 +12,23 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-
 #include <iostream>
 
-#define SERVER_PORT "6333"
-#define SERVER_ADR "::1"
 
 int main(int argc, char *argv[])
 {
+    if (argc != 3) {
+        std::cerr << "usage: ."
+                  << ((argv[0][0])
+                          ? strrchr(&argv[0][0], '/')
+                          : "appname")
+                  << " <hostname> <port>\n"
+                  << "example: ./UdpSender \"::1\" 6333";
+        exit(1);
+    }
+
+    auto port = static_cast<uint64_t >(strtol(argv[2], nullptr, 10));
+
     int sockfd {};
     struct addrinfo hints {
     }, *servinfo, *p;
@@ -29,12 +38,12 @@ int main(int argc, char *argv[])
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
-    if ((rv = getaddrinfo(SERVER_ADR, SERVER_PORT, &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
         std::cerr << "Error from getaddrinfo: " << gai_strerror(rv) << std::endl;
         return 1;
     }
 
-    std::cout << "IP addresses for: " << SERVER_ADR << "\n"
+    std::cout << "IP addresses for: " << argv[1] << "\n"
               << Utils::PrintIpAddresses(servinfo) << std::endl;
 
     // loop through all the results and make a socket
@@ -56,7 +65,7 @@ int main(int argc, char *argv[])
 
     ssize_t numBytes;
     Packet packet;
-    Message msg { 0, 11, 22, 33 };
+    Message msg { 0, 11, 22, port };
     packet.setMessage(msg);
 
     while (true) {
@@ -64,9 +73,8 @@ int main(int argc, char *argv[])
             perror("talker: SendAll");
             exit(1);
         }
-        std::cout << "talker: sent " << numBytes << " bytes to " << SERVER_ADR << ":" << SERVER_PORT << std::endl;
-        packet.dump();
-        sleep(3);
+        std::cout << "talker: sent " << numBytes << " bytes to " << argv[1] << ":" << port << std::endl;
+        usleep(100 * 1000);
     }
 
 

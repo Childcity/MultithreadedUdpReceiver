@@ -8,22 +8,32 @@
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
+    if (argc != 4) {
         std::cerr << "usage: ."
                   << ((argv[0][0])
-                      ? strrchr(&argv[0][0], '/')
-                      : "appname")
-                  << " <hostname> <port>\n";
+                          ? strrchr(&argv[0][0], '/')
+                          : "appname")
+                  << " <udp_receive_hostname> <udp_receive_port1> <udp_receive_port2>\n"
+                  << "example: ./MultithreadedUdpReceiver \"::1\" 6333 6334";
         exit(1);
     }
 
     SafeMessageQueue messageQueue;
 
-    std::thread (([&]{
-        auto port = static_cast<short>(strtol(argv[2], nullptr, 10));
-        UdpReceiver receiver(argv[1], port, messageQueue);
-        receiver.listen();
-    })).join();
+    std::thread receiverThreads[] = {
+        std::thread([&] {
+            auto port = static_cast<short>(strtol(argv[2], nullptr, 10));
+            UdpReceiver(argv[1], port, messageQueue).listen();
+        }),
+        std::thread([&] {
+            auto port = static_cast<short>(strtol(argv[3], nullptr, 10));
+            UdpReceiver(argv[1], port, messageQueue).listen();
+        })
+    };
+
+
+    for (auto &&t : receiverThreads)
+        t.join();
 
     return 0;
 }
