@@ -4,6 +4,9 @@
 
 #include "Message.h"
 
+#include "packing.h"
+#include "../Utils.hpp"
+
 void Message::Pack(Message &inMsg, unsigned char *outBuff) {
     unsigned messageSize = pack(outBuff, "HCQQ",
                                 (uint16_t)inMsg.MessageSize,

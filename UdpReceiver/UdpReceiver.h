@@ -7,12 +7,24 @@
 
 
 #include "../Common/UdpServer.h"
+#include "../Common/Protocol/Packet.h"
+
+#include <cassert>
+#include <string>
 
 class UdpReceiver : public UdpServer {
 public:
-    UdpReceiver(const std::string_view &address, short port)
-        : UdpServer(address, port, 256)
-    {}
+    UdpReceiver(const std::string_view &address, short port, SafeMessageQueue &queue);
+
+    UdpReceiver(const UdpReceiver &) = delete;
+
+    void listen();
+
+private:
+    void onRead(ssize_t numBytes) override;
+
+private:
+    SafeMessageQueue &queue_;
 };
 
 

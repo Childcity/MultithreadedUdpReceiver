@@ -20,12 +20,16 @@ endif (UNIX)
 
 add_executable(MultithreadedUdpReceiver
         main.cpp
+        Common/ThreadSafeQueue.hpp
         Common/Protocol/packing.h
         Common/Utils.hpp
         Common/ServerError.hpp
         Common/UdpServer.h
         Common/UdpServer.cpp
-        UdpReceiver/UdpReceiver.cpp
-        UdpReceiver/UdpReceiver.h
         Common/Protocol/Message.cpp
-        Common/Protocol/Message.h Common/Protocol/packing.cpp Common/Protocol/Packet.cpp Common/Protocol/Packet.h)
+        Common/Protocol/Message.h
+        Common/Protocol/packing.cpp
+        Common/Protocol/Packet.cpp
+        Common/Protocol/Packet.h
+        UdpReceiver/UdpReceiver.cpp
+        UdpReceiver/UdpReceiver.h)

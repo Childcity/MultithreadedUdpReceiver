@@ -5,6 +5,7 @@
 #ifndef MULTITHREADEDUDPRECEIVER_UTILS_H
 #define MULTITHREADEDUDPRECEIVER_UTILS_H
 
+
 #include <memory>
 #include <chrono>
 #include <iomanip>
@@ -23,15 +24,16 @@
 
 class Utils {
 public:
+
     // RAII for unix file descriotors
     struct unique_fd final {
     public:
         explicit unique_fd()
-            : fd_(-1)
+                : fd_(-1)
         {}
 
         explicit unique_fd(int fd) noexcept
-            : fd_(fd)
+                : fd_(fd)
         {}
 
         unique_fd(const unique_fd &) = delete;
@@ -39,7 +41,7 @@ public:
         unique_fd &operator=(const unique_fd &) = delete;
 
         unique_fd(unique_fd &&other) noexcept
-            : fd_(other.fd_)
+                : fd_(other.fd_)
         {
             other.fd_ = -1;
         }
@@ -84,8 +86,8 @@ public:
         int line;
 
         DebugPrinter(const char *file_, int line_)
-            : file(file_)
-            , line(line_)
+                : file(file_)
+                , line(line_)
         {}
 
         friend std::ostream &operator<<(std::ostream &stream, const DebugPrinter printer)
@@ -149,9 +151,9 @@ public:
     }
 
     // Get sockaddr, IPv4 or IPv6:
-    static void *GetInAddr(struct sockaddr_storage *saV4OrV6)
+    static void *GetInAddr(struct sockaddr_storage *saV4OorV6)
     {
-        const sockaddr *sa = (struct sockaddr *)saV4OrV6;
+        const sockaddr *sa = (struct sockaddr *)saV4OorV6;
 
         if (sa->sa_family == AF_INET) {
             return &(((struct sockaddr_in *)sa)->sin_addr);
@@ -160,17 +162,22 @@ public:
         return &(((struct sockaddr_in6 *)sa)->sin6_addr);
     }
 
-    //static void Dump(const char buf[], size_t size)
-    //{
-    //    Dump((const unsigned char *)&buf[0], size);
-    //}
+    static void Dump(const char buf[], size_t size)
+    {
+        Dump((const uint8_t *)&buf[0], size);
+    }
 
-    static void Dump(const unsigned char buf[], size_t size)
+    static void Dump(const uint8_t buf[], size_t size)
     {
         std::cout << DumpToStr(buf, size) << std::endl;
     }
 
-    static std::string DumpToStr(const unsigned char buf[], size_t size)
+    static std::string DumpToStr(const char buf[], size_t size)
+    {
+        return DumpToStr((const uint8_t *)&buf[0], size);
+    }
+
+    static std::string DumpToStr(const uint8_t buf[], size_t size)
     {
         std::stringstream stream;
         for (size_t i = 0; i < size; ++i)

@@ -6,8 +6,8 @@
 #define MULTITHREADEDUDPRECEIVER_MESSAGE_H
 
 
-#include "packing.h"
-#include "../Utils.hpp"
+#include "../ThreadSafeQueue.hpp"
+#include <cstdint>
 
 
 struct __attribute__((__packed__)) Message final {
@@ -22,5 +22,7 @@ struct __attribute__((__packed__)) Message final {
 
     void dump() const;
 };
+
+using SafeMessageQueue = childcity::threadsafeqeue::ThreadSafeQueue<Message>;
 
 #endif //MULTITHREADEDUDPRECEIVER_MESSAGE_H

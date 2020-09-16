@@ -1,5 +1,6 @@
 #include "../Common/Protocol/packing.h"
 #include "../Common/Utils.hpp"
+#include "../Common/Protocol/Packet.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,57 +16,62 @@
 #include <iostream>
 
 #define SERVER_PORT "6333"
-#define SERVER_ADR "localhost"
+#define SERVER_ADR "::1"
 
 int main(int argc, char *argv[])
 {
-	int sockfd {};
-	struct addrinfo hints{}, *servinfo, *p;
-	int rv;
+    int sockfd {};
+    struct addrinfo hints {
+    }, *servinfo, *p;
+    int rv;
 
-	ZeroMem(&hints, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_DGRAM;
+    ZeroMem(&hints, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
 
-	if ((rv = getaddrinfo(SERVER_ADR, SERVER_PORT, &hints, &servinfo)) != 0) {
-		std::cerr << "Error from getaddrinfo: " << gai_strerror(rv) << std::endl;
-		return 1;
-	}
+    if ((rv = getaddrinfo(SERVER_ADR, SERVER_PORT, &hints, &servinfo)) != 0) {
+        std::cerr << "Error from getaddrinfo: " << gai_strerror(rv) << std::endl;
+        return 1;
+    }
 
-	std::cout << "IP addresses for: " << SERVER_ADR << "\n"
-			  << Utils::PrintIpAddresses(servinfo) << std::endl;
+    std::cout << "IP addresses for: " << SERVER_ADR << "\n"
+              << Utils::PrintIpAddresses(servinfo) << std::endl;
 
-	// loop through all the results and make a socket
-	for(p = servinfo; p != nullptr; p = p->ai_next) {
-		if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-			perror("Error from socket");
-			continue;
-		}
+    // loop through all the results and make a socket
+    for (p = servinfo; p != nullptr; p = p->ai_next) {
+        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+            perror("Error from socket");
+            continue;
+        }
 
-		break;
-	}
+        break;
+    }
 
-	if (p == nullptr) {
-		std::cerr << "Error: failed to create socket" << std::endl;
-		return 1;
-	}
+    if (p == nullptr) {
+        std::cerr << "Error: failed to create socket" << std::endl;
+        return 1;
+    }
 
-	struct addrinfo *serverAddr = p;
+    struct addrinfo *serverAddr = p;
 
-	ssize_t numBytes;
-	auto s = "Hello !";
-	while (true) {
-		if ((numBytes = Utils::SendAll(sockfd, s, strlen(s), serverAddr)) == -1) {
-			perror("talker: SendAll");
-			exit(1);
-		}
-		std::cout << "talker: sent " << numBytes << " bytes to " <<SERVER_ADR << ":" << SERVER_PORT << std::endl;
-		sleep(1);
-	}
+    ssize_t numBytes;
+    Packet packet;
+    Message msg { 0, 11, 22, 33 };
+    packet.setMessage(msg);
+
+    while (true) {
+        if ((numBytes = Utils::SendAll(sockfd, packet.data(), packet.PacketSize, serverAddr)) == -1) {
+            perror("talker: SendAll");
+            exit(1);
+        }
+        std::cout << "talker: sent " << numBytes << " bytes to " << SERVER_ADR << ":" << SERVER_PORT << std::endl;
+        packet.dump();
+        sleep(3);
+    }
 
 
-	freeaddrinfo(servinfo);
-	close(sockfd);
+    freeaddrinfo(servinfo);
+    close(sockfd);
 
-	return 0;
+    return 0;
 }

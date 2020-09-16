@@ -13,7 +13,6 @@
 
 
 class UdpServer {
-
 protected:
     enum class ReadStatus
     {
