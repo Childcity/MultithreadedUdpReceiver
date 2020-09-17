@@ -4,9 +4,9 @@
 
 #include "UdpReceiver.h"
 
-UdpReceiver::UdpReceiver(const std::string_view &address, short port, SafeMessageQueue &queue)
+UdpReceiver::UdpReceiver(const std::string_view &address, short port, SafeMessageList &list)
     : UdpServer(address, port, 64)
-    , queue_(queue)
+    , list_(list)
 {}
 
 void UdpReceiver::listen()
@@ -41,7 +41,6 @@ void UdpReceiver::onRead(ssize_t numBytes)
         return;
     }
 
-    msg.dump();
-    queue_.push(msg);
-    DEBUG(queue_.size())
+    //msg.dump();
+    list_.pushFront(msg);
 }

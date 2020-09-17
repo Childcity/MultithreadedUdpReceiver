@@ -133,15 +133,15 @@ public:
         return stream.str();
     }
 
-    static size_t SendAll(int sockFd, const char *buf, size_t len, const struct addrinfo *addr = nullptr)
+    static ssize_t SendAll(int sockFd, const char *buf, ssize_t len, const struct addrinfo *addr = nullptr)
     {
         // system call send is for TCP
-        const auto sendFunctor = [sockFd](const void *buf, size_t n) {
+        const auto sendFunctor = [sockFd](const void *buf, ssize_t n) {
             return send(sockFd, buf, n, 0);
         };
 
         // System call sendto is for UDP
-        const auto sendToFunctor = [sockFd, addr](const void *buf, size_t n) {
+        const auto sendToFunctor = [sockFd, addr](const void *buf, ssize_t n) {
             return sendto(sockFd, buf, n, 0, addr->ai_addr, addr->ai_addrlen);
         };
 
@@ -190,14 +190,14 @@ public:
 
 private:
     template<typename Functor>
-    static size_t SendAllHelper(const char *buf, size_t len, const Functor &sendSome)
+    static ssize_t SendAllHelper(const char *buf, ssize_t len, const Functor &sendSome)
     {
-        size_t total = 0;       // how many bytes we've sent
-        size_t bytesLeft = len; // how many we have left to send
+        ssize_t total = 0;       // how many bytes we've sent
+        ssize_t bytesLeft = len; // how many we have left to send
         ssize_t n;
 
         while (total < len) {
-            if ((n = sendSome(buf + total, bytesLeft)) == -1)
+            if (-1 == (n = sendSome(buf + total, bytesLeft)))
                 break;
 
             total += n;

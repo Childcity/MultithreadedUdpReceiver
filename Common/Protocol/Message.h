@@ -6,11 +6,11 @@
 #define MULTITHREADEDUDPRECEIVER_MESSAGE_H
 
 
-#include "../ThreadSafeQueue.hpp"
+#include "../ThreadSafeList.hpp"
 #include <cstdint>
 
-
-struct __attribute__((__packed__)) Message final {
+#pragma pack(push, 1)
+struct Message final {
     uint16_t MessageSize;
     uint8_t MessageType;
     uint64_t MessageId;
@@ -22,7 +22,8 @@ struct __attribute__((__packed__)) Message final {
 
     void dump() const;
 };
+#pragma pack(pop)
 
-using SafeMessageQueue = childcity::threadsafeqeue::ThreadSafeQueue<Message>;
+using SafeMessageList = childcity::threadsafelist::ThreadSafeList<Message>;
 
 #endif //MULTITHREADEDUDPRECEIVER_MESSAGE_H

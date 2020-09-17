@@ -2,16 +2,21 @@
 // Created by childcity on 14.09.20.
 //
 
+#include <sys/socket.h>
+#include <cerrno>
 #include "UdpServer.h"
 
+using namespace std::string_literals;
+
 UdpServer::UdpServer(std::string_view address, short port, size_t receiveBufLength)
-        : address_(address)
-        , port_(port)
-        , receiveBufLen_(receiveBufLength)
-        , receiveBuf_(std::make_unique<char[]>(receiveBufLength))
+    : address_(address)
+    , port_(port)
+    , receiveBufLen_(receiveBufLength)
+    , receiveBuf_(std::make_unique<char[]>(receiveBufLength))
 {}
 
-void UdpServer::createListener() {
+void UdpServer::createListener()
+{
     int rv;
     int yes = 1; // For setsockopt() SO_REUSEADDR, below
     struct addrinfo hints = {};
@@ -22,7 +27,7 @@ void UdpServer::createListener() {
     hints.ai_socktype = SOCK_DGRAM;
 
     if ((rv = getaddrinfo(address_.data(), std::to_string(port_).c_str(), &hints, &servInfo)) != 0) {
-        throw ServerError(std::string("Error from getaddrinfo: ") + gai_strerror(rv));
+        throw ServerError("Error from getaddrinfo(): "s + gai_strerror(rv));
     }
 
     DEBUG("\nIP addresses for: " << address_ << "\n"
@@ -37,18 +42,18 @@ void UdpServer::createListener() {
         }
 
         // Lose the pesky "address already in use" error message
-        if (setsockopt(listenerFd_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
+        if (-1 == setsockopt(listenerFd_, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes)) {
             DEBUG("Error from setsockopt(): " << std::strerror(errno));
             continue;
         }
 
         // Set to non-blocking)
-        if (fcntl(listenerFd_, F_SETFL, O_NONBLOCK) == -1) {
+        if (-1 == fcntl(listenerFd_, F_SETFL, O_NONBLOCK)) {
             DEBUG("Error from fcntl(): " << std::strerror(errno));
             continue;
         }
 
-        if (bind(listenerFd_, p->ai_addr, p->ai_addrlen) == -1) {
+        if (-1 == bind(listenerFd_, p->ai_addr, p->ai_addrlen)) {
             DEBUG("Error from bind(): " << std::strerror(errno));
             continue;
         }
@@ -64,16 +69,19 @@ void UdpServer::createListener() {
         freeaddrinfo(servInfo);
 
         if (isPInValid) {
-            throw ServerError("Failed to create socket");
+            throw ServerError("Failed to create socket"s + std::strerror(errno));
         }
     }
 }
 
-UdpServer::ReadStatus UdpServer::readSome() {
+UdpServer::ReadStatus UdpServer::readSome()
+{
     ssize_t numBytes;
 
     // non blocking recv
-    if ((numBytes = recvfrom(listenerFd_, receiveBuf_.get(), receiveBufLen_, 0, (struct sockaddr *)&theirAddress_, &theirAddressLen_)) == -1) {
+    if (-1 == (numBytes = recvfrom(listenerFd_, receiveBuf_.get(), receiveBufLen_, 0,
+                                   (struct sockaddr *)&theirAddress_, &theirAddressLen_)))
+    {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return ReadStatus::DataNotExist;
         } else {

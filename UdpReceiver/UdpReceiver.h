@@ -6,7 +6,7 @@
 #define MULTITHREADEDUDPRECEIVER_UDPRECEIVER_H
 
 
-#include "../Common/UdpServer.h"
+#include "UdpServer.h"
 #include "../Common/Protocol/Packet.h"
 
 #include <cassert>
@@ -14,7 +14,7 @@
 
 class UdpReceiver : public UdpServer {
 public:
-    UdpReceiver(const std::string_view &address, short port, SafeMessageQueue &queue);
+    UdpReceiver(const std::string_view &address, short port, SafeMessageList &list);
 
     UdpReceiver(const UdpReceiver &) = delete;
 
@@ -24,7 +24,7 @@ private:
     void onRead(ssize_t numBytes) override;
 
 private:
-    SafeMessageQueue &queue_;
+    SafeMessageList &list_;
 };
 
 

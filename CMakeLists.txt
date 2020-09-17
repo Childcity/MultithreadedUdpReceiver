@@ -12,24 +12,26 @@ if(BUILD_UdpSender)
     add_subdirectory(UdpSender)
 endif()
 
-#execute_process(COMMAND echo "assssssss")
-
 if (UNIX)
     set(CMAKE_CXX_FLAGS "-pthread -Wall -Wno-reorder")
 endif (UNIX)
 
 add_executable(MultithreadedUdpReceiver
         main.cpp
-        Common/ThreadSafeQueue.hpp
         Common/Protocol/packing.h
-        Common/Utils.hpp
-        Common/ServerError.hpp
-        Common/UdpServer.h
-        Common/UdpServer.cpp
+        Common/Protocol/packing.cpp
         Common/Protocol/Message.cpp
         Common/Protocol/Message.h
-        Common/Protocol/packing.cpp
         Common/Protocol/Packet.cpp
         Common/Protocol/Packet.h
+        Common/ThreadSafeList.hpp
+        Common/Utils.hpp
+        Common/ServerError.hpp
+        UdpReceiver/UdpServer.h
+        UdpReceiver/UdpServer.cpp
+        TcpSender/TcpServer.h
+        TcpSender/TcpServer.cpp
         UdpReceiver/UdpReceiver.cpp
-        UdpReceiver/UdpReceiver.h)
+        UdpReceiver/UdpReceiver.h
+        TcpSender/TcpSender.cpp
+        TcpSender/TcpSender.h)

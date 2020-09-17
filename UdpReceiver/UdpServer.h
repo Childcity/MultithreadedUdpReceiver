@@ -6,8 +6,8 @@
 #define MULTITHREADEDUDPRECEIVER_UDPSERVER_H
 
 
-#include "Utils.hpp"
-#include "ServerError.hpp"
+#include "../Common/Utils.hpp"
+#include "../Common/ServerError.hpp"
 
 #include <sys/fcntl.h>
 

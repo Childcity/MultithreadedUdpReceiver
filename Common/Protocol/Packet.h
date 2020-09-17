@@ -12,8 +12,9 @@
 
 struct Packet final {
 
+#pragma pack(push, 1)
     // Header of our packet
-    struct __attribute__((__packed__)) Header {
+    struct Header {
     private:
         static constexpr char ConstHeader[] = { 'B', 'E', 'G', 'I', 'N', '\0' };
         static constexpr size_t HeaderSize = sizeof(ConstHeader);
@@ -30,9 +31,9 @@ struct Packet final {
     };
 
     // Footer of our packet
-    struct __attribute__((__packed__)) Footer {
+    struct Footer {
     private:
-        static constexpr char ConstFooter[] = { 'E', 'N', 'D', ';', '\0' };
+        static constexpr char ConstFooter[] = { 'E', 'N', 'D', ';', '\n', '\0' };
         static constexpr size_t FooterSize = sizeof(ConstFooter);
 
     public:
@@ -45,6 +46,7 @@ struct Packet final {
         static bool Verify(const char *footer_) { return 0 == memcmp(footer_, Footer::ConstFooter, Footer::FooterSize); }
         // clang-format on
     };
+#pragma pack(pop)
 
     static constexpr ssize_t HeaderSize = sizeof(Header);
     static constexpr ssize_t BodySize = sizeof(Message);

@@ -31,15 +31,14 @@ int main(int argc, char *argv[])
     auto port = static_cast<uint64_t>(strtol(argv[2], nullptr, 10));
 
     int sockfd {};
-    struct addrinfo hints {
-    }, *servinfo, *p;
+    struct addrinfo hints, *servinfo, *p;
     int rv;
 
     ZeroMem(&hints, sizeof hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
 
-    if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
+    if (0 != (rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo))) {
         std::cerr << "Error from getaddrinfo: " << gai_strerror(rv) << std::endl;
         return 1;
     }
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
 
     // loop through all the results and make a socket
     for (p = servinfo; p != nullptr; p = p->ai_next) {
-        if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+        if (-1 == (sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))) {
             perror("Error from socket");
             continue;
         }
@@ -62,20 +61,45 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    struct addrinfo *serverAddr = p;
 
-    ssize_t numBytes;
-    Packet packet;
-    Message msg { 0, 11, 22, port };
-    packet.setMessage(msg);
+    {
+        // Prepare system for test
+        std::ostream::sync_with_stdio(false);
+        srand(time(NULL));
+    }
 
-    while (true) {
-        if ((numBytes = Utils::SendAll(sockfd, packet.data(), packet.PacketSize, serverAddr)) == -1) {
-            perror("talker: SendAll");
-            exit(1);
+    {
+        // Run simulation
+
+        // Will return 10 with some Probability
+        const auto rndData = [] { return static_cast<uint64_t>(rand() % 12); };
+        const struct addrinfo *const serverAddr = p;
+
+        ssize_t numBytes;
+        Packet packet;
+        Message msg { 0, 11, 0, 0 };
+        size_t msgId = 1;
+
+        while (true) {
+            msg.MessageData = rndData();
+            msg.MessageId = msgId++;
+
+            packet.setMessage(msg);
+            if (-1 == (numBytes = Utils::SendAll(sockfd, packet.data(), packet.PacketSize, serverAddr))) {
+                perror("talker: SendAll");
+                exit(1);
+            }
+
+            std::cout << "talker: sent " << numBytes
+                      << " {msgId: " << msgId
+                      << "} bytes to " << argv[1] << ":" << port
+                      << "\n"; // we needn't std::endl
+
+            if (msgId % 10 == 0)
+                std::cout << std::flush; // flush stream 1/10 sent messages
+
+            usleep(10 * 1000); // sleep 10ms, for other processes on CPU
         }
-        std::cout << "talker: sent " << numBytes << " bytes to " << argv[1] << ":" << port << std::endl;
-        usleep(100 * 1000);
     }
 
 
