@@ -10,4 +10,11 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS "-pthread -Wall -Wno-reorder")
 endif (UNIX)
 
-add_executable(UdpSender main.cpp ../Common/Utils.hpp ../Common/Protocol/Message.cpp ../Common/Protocol/Message.h ../Common/Protocol/packing.cpp ../Common/Protocol/Packet.cpp ../Common/Protocol/Packet.h)
+add_executable(UdpSender
+        main.cpp
+        ../Common/Utils.hpp
+        ../Common/Protocol/Message.cpp
+        ../Common/Protocol/Message.h
+        ../Common/Protocol/packing.cpp
+        ../Common/Protocol/Packet.cpp
+        ../Common/Protocol/Packet.h)

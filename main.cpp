@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
                     //if(10ull != msg.MessageData) DEBUG("removed: " <<msg.MessageId << " " <<msg.MessageData);
                     return 10ull != msg.MessageData; // removing all unnecessary messages from list
                 });
-                usleep(10 * 1000); // give a chance for others tasks
+                usleep(10 * 1000); // give a chance for other tasks
             }
         })
     };
