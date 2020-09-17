@@ -15,41 +15,40 @@
 #include <iostream>
 
 
+using namespace std::string_literals;
+
+void CheckArgsAndPrintUsage(int argc, char *argv[]);
+
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
-        const char *appName = ((argv[0][0])
-                                   ? strrchr(&argv[0][0], '/')
-                                   : "appname");
-        std::cerr << "usage: ."
-                  << appName << " <udp_receive_hostname> <udp_receive_port>\n"
-                  << "example: ." << appName << " \"::1\" 6333" << std::endl;
-        ;
-        exit(1);
-    }
+    CheckArgsAndPrintUsage(argc, argv);
 
-    auto port = static_cast<uint64_t>(strtol(argv[2], nullptr, 10));
-
-    int sockfd {};
-    struct addrinfo hints, *servinfo, *p;
+    int sockFd {};
+    struct addrinfo hints, *servInfo, *p;
     int rv;
 
     ZeroMem(&hints, sizeof hints);
     hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_socktype = SOCK_STREAM;
 
-    if (0 != (rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo))) {
-        std::cerr << "Error from getaddrinfo: " << gai_strerror(rv) << std::endl;
+    if (0 != (rv = getaddrinfo(argv[1], argv[2], &hints, &servInfo))) {
+        std::cerr << "Error from getaddrinfo(): " << gai_strerror(rv) << std::endl;
         return 1;
     }
 
     std::cout << "IP addresses for: " << argv[1] << "\n"
-              << Utils::PrintIpAddresses(servinfo) << std::endl;
+              << Utils::PrintIpAddresses(servInfo) << std::endl;
 
     // loop through all the results and make a socket
-    for (p = servinfo; p != nullptr; p = p->ai_next) {
-        if (-1 == (sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))) {
-            perror("Error from socket");
+    for (p = servInfo; p != nullptr; p = p->ai_next) {
+        if (-1 == (sockFd = socket(p->ai_family, p->ai_socktype, p->ai_protocol))) {
+            perror("Error from socket()");
+            continue;
+        }
+
+        if (-1 == connect(sockFd, p->ai_addr, p->ai_addrlen)) {
+            close(sockFd);
+            perror(("Error from connect() to host "s + argv[1] + ":" + argv[2]).c_str());
             continue;
         }
 
@@ -57,54 +56,67 @@ int main(int argc, char *argv[])
     }
 
     if (p == nullptr) {
-        std::cerr << "Error: failed to create socket" << std::endl;
+        std::cerr << "Failed to create socket" << std::endl;
         return 1;
     }
 
+    freeaddrinfo(servInfo);
 
     {
         // Prepare system for test
         std::ostream::sync_with_stdio(false);
-        srand(time(NULL));
     }
 
     {
         // Run simulation
-
-        // Will return 10 with some Probability
-        const auto rndData = [] { return static_cast<uint64_t>(rand() % 12); };
-        const struct addrinfo *const serverAddr = p;
-
         ssize_t numBytes;
-        Packet packet;
-        Message msg { 0, 11, 0, 0 };
-        size_t msgId = 1;
+        char receiveBuf[64];
 
         while (true) {
-            msg.MessageData = rndData();
-            msg.MessageId = msgId++;
-
-            packet.setMessage(msg);
-            if (-1 == (numBytes = Utils::SendAll(sockfd, packet.data(), packet.PacketSize, serverAddr))) {
-                perror("talker: SendAll");
-                exit(1);
+            // non blocking recv
+            if (-1 == (numBytes = recv(sockFd, receiveBuf, sizeof(receiveBuf), 0)))
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    continue;
+                } else {
+                    perror("Error recv()");
+                    return 1;
+                }
             }
 
-            std::cout << "talker: sent " << numBytes
-                      << " {msgId: " << msgId
-                      << "} bytes to " << argv[1] << ":" << port
-                      << "\n"; // we needn't std::endl
+            if (numBytes < Packet::PacketSize) {
+                DEBUG("incorrect numBytes: " << numBytes);
+                continue;
+            }
 
-            if (msgId % 10 == 0)
-                std::cout << std::flush; // flush stream 1/10 sent messages
+            Packet packet(receiveBuf);
+            Message msg = packet.getMessage();
 
-            usleep(10 * 1000); // sleep 10ms, for other processes on CPU
+            if (msg.MessageSize != Packet::BodySize) {
+                DEBUG("incorrect msg.MessageSize: " << msg.MessageSize);
+                continue;
+            }
+
+            msg.dump();
         }
     }
 
 
-    freeaddrinfo(servinfo);
-    close(sockfd);
+    close(sockFd);
 
     return 0;
+}
+
+
+void CheckArgsAndPrintUsage(int argc, char **argv)
+{
+    if (argc != 3) {
+        const char *appName = ((argv[0][0])
+                                   ? strrchr(&argv[0][0], '/')
+                                   : "appname");
+        std::cerr << "usage: ."
+                  << appName << " <tcp_sender_hostname> <tcp_sender_port>\n"
+                  << "example: ." << appName << " \"::1\" 6335" << std::endl;
+        exit(1);
+    }
 }

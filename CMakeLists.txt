@@ -7,9 +7,13 @@ message("Project Dir is: " ${PROJECT_SOURCE_DIR})
 message("Current OS is: " ${CMAKE_SYSTEM_NAME})
 
 option(BUILD_UdpSender "Enable building UdpSender" ON)
+option(BUILD_TcpReceiver "Enable building TcpReceiver" ON)
 
 if(BUILD_UdpSender)
     add_subdirectory(UdpSender)
+endif()
+if(BUILD_TcpReceiver)
+    add_subdirectory(TcpReceiver)
 endif()
 
 if (UNIX)
