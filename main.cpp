@@ -1,13 +1,50 @@
-#include "UdpReceiver/UdpReceiver.h"
 #include "Common/ThreadSafeList.hpp"
+#include "UdpReceiver/UdpReceiver.h"
 #include "TcpSender/TcpSender.h"
-
 
 #include <cstring>
 #include <thread>
 
 
+void CheckArgsAndPrintUsage(int argc, char *argv[]);
+
 int main(int argc, char *argv[])
+{
+    CheckArgsAndPrintUsage(argc, argv);
+
+    SafeMessageList messages;
+    auto toShort = [](char *str) { return static_cast<short>(strtol(str, nullptr, 10)); };
+
+    std::thread workerThreads[] = {
+        std::thread([&] {
+            UdpReceiver(argv[1], toShort(argv[2]), messages).listen();
+        }),
+        std::thread([&] {
+            UdpReceiver(argv[1], toShort(argv[3]), messages).listen();
+        }),
+        std::thread([&] {
+            TcpSender(argv[1], toShort(argv[4]), messages).listen();
+        }),
+        std::thread([&] {
+            while (true) {
+                messages.removeIf([&](const Message &msg) {
+                    //if(10ull != msg.MessageData) DEBUG("removed: " <<msg.MessageId << " " <<msg.MessageData);
+                    return 10ull != msg.MessageData; // removing all unnecessary messages from list
+                });
+                usleep(100 * 1000); // give a chance for other tasks
+            }
+        })
+    };
+
+
+    for (auto &&t : workerThreads)
+        t.join();
+
+    return 0;
+}
+
+
+void CheckArgsAndPrintUsage(int argc, char **argv)
 {
     if (argc != 5) {
         const char *appName = ((argv[0][0])
@@ -18,36 +55,4 @@ int main(int argc, char *argv[])
                   << "example: ." << appName << " \"::1\" 6333 6334 6335" << std::endl;
         exit(1);
     }
-
-    SafeMessageList messages;
-
-    std::thread workerThreads[] = {
-        std::thread([&] {
-            auto port = static_cast<short>(strtol(argv[2], nullptr, 10));
-            UdpReceiver(argv[1], port, messages).listen();
-        }),
-        std::thread([&] {
-            auto port = static_cast<short>(strtol(argv[3], nullptr, 10));
-            UdpReceiver(argv[1], port, messages).listen();
-        }),
-        std::thread([&] {
-            auto port = static_cast<short>(strtol(argv[4], nullptr, 10));
-            TcpSender(argv[1], port, messages).listen();
-        }),
-        std::thread([&] {
-            while (true) {
-                messages.removeIf([&](const Message &msg) {
-                    //if(10ull != msg.MessageData) DEBUG("removed: " <<msg.MessageId << " " <<msg.MessageData);
-                    return 10ull != msg.MessageData; // removing all unnecessary messages from list
-                });
-                usleep(10 * 1000); // give a chance for other tasks
-            }
-        })
-    };
-
-
-    for (auto &&t : workerThreads)
-        t.join();
-
-    return 0;
 }
