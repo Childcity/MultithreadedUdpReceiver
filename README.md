@@ -18,7 +18,7 @@ The first 2 streams receive messages over the UDP protocol, the 3rd send over TC
 
 ```bash
     # Imagine, you now in the root of the project and have './build' dir...
-    cd build && ./MultithreadedUdpReceiver "::1" 6333 6444 6445
+    cd build && ./MultithreadedUdpReceiver "::1" 6333 6334 6335
 ```
 
 #### Step 2
@@ -40,3 +40,6 @@ The first 2 streams receive messages over the UDP protocol, the 3rd send over TC
     # Imagine, you now in the root of the project and have './build' dir...
     cd build/TcpReceiver && ./TcpReceiver "::1" 6335
 ```
+
+## Watch example
+![example](./docs/example.gif)
