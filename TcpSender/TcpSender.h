@@ -12,7 +12,7 @@
 #include <cassert>
 #include <string>
 
-class TcpSender : public TcpServer {
+class TcpSender final : public TcpServer {
 public:
     enum class ReadStatus
     {

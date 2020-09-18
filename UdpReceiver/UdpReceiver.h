@@ -12,7 +12,7 @@
 #include <cassert>
 #include <string>
 
-class UdpReceiver : public UdpServer {
+class UdpReceiver final : public UdpServer {
 public:
     UdpReceiver(const std::string_view &address, short port, SafeMessageList &list);
 
