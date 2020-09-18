@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 {
     CheckArgsAndPrintUsage(argc, argv);
 
-    int sockFd {};
+    Utils::unique_fd sockFd;
     struct addrinfo hints, *servInfo, *p;
     int rv;
 
